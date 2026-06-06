@@ -250,17 +250,37 @@ router.put('/patients/:id/route', async (req, res) => {
         WHERE PatientID = @PatientID
       `);
       
-    // Fetch updated patient to broadcast
-    const updatedPatientReq = await pool.request()
-      .input('PatientID', sql.Int, id)
-      .query('SELECT * FROM Patients WHERE PatientID = @PatientID');
+    // Auto-promote if the destination queue is empty
+    if (OPDNumber) {
+      const activeCheck = await pool.request()
+        .input('OPDCheckNumber', sql.NVarChar(50), OPDNumber)
+        .query("SELECT COUNT(*) as count FROM Patients WHERE OPDNumber = @OPDCheckNumber AND IsActive = 1");
+
+      if (activeCheck.recordset[0].count === 0) {
+        await pool.request()
+          .input('OPDCheckNumber', sql.NVarChar(50), OPDNumber)
+          .query(`
+            DECLARE @NextPatientID INT;
+            SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+            WHERE OPDNumber = @OPDCheckNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+            ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+            IF @NextPatientID IS NOT NULL
+              UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
+          `);
+      }
+    }
+
+    // Fetch updated patient to broadcast (in case they were the one promoted)
+    const finalPatientReq = await pool.request()
+      .input('PatientIDFinal', sql.Int, id)
+      .query('SELECT * FROM Patients WHERE PatientID = @PatientIDFinal');
       
-    const updatedPatient = updatedPatientReq.recordset[0];
+    const finalPatient = finalPatientReq.recordset[0];
     
     // Now broadcast to the OPDs since they are properly queued
-    req.io.emit('queue_updated', { type: 'NEW_PATIENT', patient: updatedPatient });
+    req.io.emit('queue_updated', { type: 'NEW_PATIENT', patient: finalPatient });
     
-    res.json({ success: true, patient: updatedPatient });
+    res.json({ success: true, patient: finalPatient });
   } catch (error) {
     console.error('Error routing patient:', error);
     res.status(500).json({ error: 'Failed to route patient' });
@@ -316,12 +336,12 @@ router.put('/patients/:id/status', async (req, res) => {
               await innerPool.request()
                 .input('OPDNumber', sql.NVarChar(50), opdNumber)
                 .query(`
-                  WITH NextPatient AS (
-                    SELECT TOP 1 PatientID FROM Patients
-                    WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
-                    ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC
-                  )
-                  UPDATE Patients SET IsActive = 1 WHERE PatientID IN (SELECT PatientID FROM NextPatient)
+                  DECLARE @NextPatientID INT;
+                  SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+                  WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+                  ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+                  IF @NextPatientID IS NOT NULL
+                    UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
                 `);
               req.io.emit('queue_updated', { type: 'TIMER_RESUMED' });
             } catch(e) { console.error("Error auto-resuming queue:", e); }
@@ -334,12 +354,12 @@ router.put('/patients/:id/status', async (req, res) => {
             await pool.request()
               .input('OPDNumber', sql.NVarChar(50), opdNumber)
               .query(`
-                WITH NextPatient AS (
-                  SELECT TOP 1 PatientID FROM Patients
-                  WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
-                  ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC
-                )
-                UPDATE Patients SET IsActive = 1 WHERE PatientID IN (SELECT PatientID FROM NextPatient)
+                DECLARE @NextPatientID INT;
+                SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+                WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+                ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+                IF @NextPatientID IS NOT NULL
+                  UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
               `);
           }
         }
@@ -381,12 +401,12 @@ router.post('/opd/:opdNumber/call-next', async (req, res) => {
     await pool.request()
       .input('OPDNumber', sql.NVarChar(50), opdNumber)
       .query(`
-        WITH NextPatient AS (
-          SELECT TOP 1 PatientID FROM Patients
-          WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
-          ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC
-        )
-        UPDATE Patients SET IsActive = 1 WHERE PatientID IN (SELECT PatientID FROM NextPatient)
+        DECLARE @NextPatientID INT;
+        SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+        WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+        ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+        IF @NextPatientID IS NOT NULL
+          UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
       `);
       
     req.io.emit('queue_updated', { type: 'CALL_NEXT' });
@@ -483,12 +503,12 @@ router.post('/opd/:opdNumber/status', async (req, res) => {
       await pool.request()
         .input('OPDNumber', sql.NVarChar(50), opdNumber)
         .query(`
-          WITH NextPatient AS (
-            SELECT TOP 1 PatientID FROM Patients
-            WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
-            ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC
-          )
-          UPDATE Patients SET IsActive = 1 WHERE PatientID IN (SELECT PatientID FROM NextPatient)
+          DECLARE @NextPatientID INT;
+          SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+          WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+          ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+          IF @NextPatientID IS NOT NULL
+            UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
         `);
       req.io.emit('queue_updated', { type: 'STATUS_RESUMED' });
     } catch (e) { console.error("Error auto-resuming queue:", e); }
@@ -526,12 +546,12 @@ router.post('/opd/:opdNumber/cancel-ot-timer', async (req, res) => {
         await pool.request()
           .input('OPDNumber', sql.NVarChar(50), opdNumber)
           .query(`
-            WITH NextPatient AS (
-              SELECT TOP 1 PatientID FROM Patients
-              WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
-              ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC
-            )
-            UPDATE Patients SET IsActive = 1 WHERE PatientID IN (SELECT PatientID FROM NextPatient)
+            DECLARE @NextPatientID INT;
+            SELECT TOP 1 @NextPatientID = PatientID FROM Patients
+            WHERE OPDNumber = @OPDNumber AND QueueStatus IN ('WAITING', 'UNHOLD')
+            ORDER BY CASE WHEN QueueStatus = 'UNHOLD' THEN 1 ELSE 2 END, IsEmergency DESC, Timestamp ASC;
+            IF @NextPatientID IS NOT NULL
+              UPDATE Patients SET IsActive = 1 WHERE PatientID = @NextPatientID;
           `);
         req.io.emit('queue_updated', { type: 'TIMER_CANCELLED_RESUMED' });
       } catch (e) { console.error("Error auto-resuming queue after cancel:", e); }
