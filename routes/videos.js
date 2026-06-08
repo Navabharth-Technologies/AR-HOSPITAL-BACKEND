@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const { connectDB, sql } = require('../config/db');
 const { BlobServiceClient } = require('@azure/storage-blob');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const path = require('path');
 
 // Multer in-memory storage for uploading to Azure
@@ -31,7 +31,7 @@ router.post('/upload-video', upload.single('video'), async (req, res) => {
 
         const originalName = req.file.originalname;
         const extension = path.extname(originalName);
-        const blobName = `${uuidv4()}${extension}`;
+        const blobName = `${crypto.randomUUID()}${extension}`;
 
         const containerClient = getContainerClient();
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
