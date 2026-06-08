@@ -25,6 +25,8 @@ router.post('/login', async (req, res) => {
       tableName = 'ReceptionistLogins';
     } else if (role === 'OPD_HANDLER') {
       tableName = 'OPDHandlerLogins';
+    } else if (role === 'SIGNAGE_ADMIN') {
+      tableName = 'SignageAdminLogins';
     } else {
       return res.status(400).json({ success: false, message: 'Invalid role specified' });
     }
