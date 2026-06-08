@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const apiRoutes = require('./routes/api');
+const videoRoutes = require('./routes/videos');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,26 +28,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api', apiRoutes);
-
-const videosPath = path.join(__dirname, '../AR DISPLAY/Videos');
-app.use('/videos', express.static(videosPath));
-
-app.get('/api/videos', (req, res) => {
-  try {
-    if (!fs.existsSync(videosPath)) {
-      return res.json({ success: true, videos: [] });
-    }
-    const files = fs.readdirSync(videosPath);
-    const videos = files.filter(f => {
-      const ext = path.extname(f).toLowerCase();
-      return ['.mp4', '.mov', '.mkv', '.webm'].includes(ext);
-    });
-    res.json({ success: true, videos });
-  } catch (error) {
-    console.error("Error reading videos directory:", error);
-    res.json({ success: false, videos: [] });
-  }
-});
+app.use('/api', videoRoutes);
 
 app.get('/', (req, res) => {
   res.send('AR Hospital Backend is Running.');
