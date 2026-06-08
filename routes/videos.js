@@ -189,6 +189,15 @@ router.delete('/videos/:id', async (req, res) => {
             .input('Id', sql.Int, id)
             .query('DELETE FROM Videos WHERE Id = @Id');
 
+        // 4. Normalize DisplayOrder to remove gaps
+        await pool.request().query(`
+            WITH CTE AS (
+                SELECT DisplayOrder, ROW_NUMBER() OVER(ORDER BY DisplayOrder ASC) - 1 as NewOrder
+                FROM Videos
+            )
+            UPDATE CTE SET DisplayOrder = NewOrder;
+        `);
+
         res.json({ success: true });
 
     } catch (error) {
