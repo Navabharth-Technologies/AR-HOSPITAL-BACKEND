@@ -157,30 +157,43 @@ router.put('/videos/:id', async (req, res) => {
     }
 });
 
-// 4. DELETE /videos/:id - Soft Delete
+// 4. DELETE /videos/:id - Hard Delete
 router.delete('/videos/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const pool = await connectDB();
         
-        const result = await pool.request()
+        // 1. Get the video URL so we can delete it from Azure
+        const selectResult = await pool.request()
             .input('Id', sql.Int, id)
-            .query(`
-                UPDATE Videos 
-                SET IsActive = 0, UpdatedDate = GETDATE()
-                OUTPUT INSERTED.*
-                WHERE Id = @Id
-            `);
+            .query('SELECT VideoUrl FROM Videos WHERE Id = @Id');
 
-        if (result.recordset.length === 0) {
+        if (selectResult.recordset.length === 0) {
             return res.status(404).json({ success: false, error: 'Video not found' });
         }
 
-        res.json({ success: true, video: result.recordset[0] });
+        const videoUrl = selectResult.recordset[0].VideoUrl;
+        
+        // 2. Delete from Azure Blob Storage
+        try {
+            const blobName = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
+            const containerClient = getContainerClient();
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+            await blockBlobClient.deleteIfExists();
+        } catch (azureErr) {
+            console.error('Failed to delete blob from Azure:', azureErr);
+        }
+
+        // 3. Delete from DB completely
+        await pool.request()
+            .input('Id', sql.Int, id)
+            .query('DELETE FROM Videos WHERE Id = @Id');
+
+        res.json({ success: true });
 
     } catch (error) {
         console.error('Delete Video Error:', error);
-        res.status(500).json({ success: false, error: 'Failed to soft delete video' });
+        res.status(500).json({ success: false, error: 'Failed to delete video' });
     }
 });
 
