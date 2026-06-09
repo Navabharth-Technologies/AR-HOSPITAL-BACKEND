@@ -9,6 +9,7 @@ const { connectDB, sql } = require('../config/db');
 // Global state for tracking pending/active OT Timers per OPD
 const pendingOTTimers = {}; // { 'OPD 1': { durationMinutes: 30, timerId: null, endTime: null, isActive: false } }
 const staticStatuses = {}; // { 'OPD 1': 'AVAILABLE' }
+const pendingStaticStatuses = {}; // { 'OPD 1': 'AWAY' }
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -318,7 +319,13 @@ router.put('/patients/:id/status', async (req, res) => {
         .query("SELECT COUNT(*) as count FROM Patients WHERE OPDNumber = @OPDNumber AND IsActive = 1");
 
       if (activeCheck.recordset[0].count === 0) {
-        if (pendingOTTimers[opdNumber] && !pendingOTTimers[opdNumber].isActive) {
+        if (pendingStaticStatuses[opdNumber]) {
+          const nextStatus = pendingStaticStatuses[opdNumber];
+          staticStatuses[opdNumber] = nextStatus;
+          delete pendingStaticStatuses[opdNumber];
+          req.io.emit('doctor_status_changed', { opdId: opdNumber, status: nextStatus });
+          req.io.emit('queue_updated', { type: 'STATUS_PAUSED' });
+        } else if (pendingOTTimers[opdNumber] && !pendingOTTimers[opdNumber].isActive) {
           // We have a pending timer, so start it now instead of promoting the next patient
           const duration = pendingOTTimers[opdNumber].durationMinutes;
           const endTimeMs = Date.now() + duration * 60 * 1000;
@@ -473,6 +480,7 @@ router.post('/opd/:opdNumber/ot-timer', async (req, res) => {
 router.get('/opd/:opdNumber/status', (req, res) => {
   const opdNumber = req.params.opdNumber;
   const staticStatus = staticStatuses[opdNumber] || 'AVAILABLE';
+  const pendingStatus = pendingStaticStatuses[opdNumber] || null;
   
   if (staticStatus !== 'AVAILABLE') {
     return res.json({ success: true, status: staticStatus, hasTimer: false });
@@ -485,10 +493,11 @@ router.get('/opd/:opdNumber/status', (req, res) => {
       hasTimer: true,
       isActive: pendingOTTimers[opdNumber].isActive,
       endTime: pendingOTTimers[opdNumber].endTime,
-      durationMinutes: pendingOTTimers[opdNumber].durationMinutes
+      durationMinutes: pendingOTTimers[opdNumber].durationMinutes,
+      pendingStatus
     });
   } else {
-    res.json({ success: true, status: 'AVAILABLE', hasTimer: false });
+    res.json({ success: true, status: 'AVAILABLE', hasTimer: false, pendingStatus });
   }
 });
 
@@ -497,9 +506,9 @@ router.post('/opd/:opdNumber/status', async (req, res) => {
   const opdNumber = req.params.opdNumber;
   const { status } = req.body;
   
-  staticStatuses[opdNumber] = status;
-
   if (status === 'AVAILABLE') {
+    staticStatuses[opdNumber] = status;
+    delete pendingStaticStatuses[opdNumber];
     try {
       const pool = await connectDB();
       await pool.request()
@@ -514,19 +523,36 @@ router.post('/opd/:opdNumber/status', async (req, res) => {
         `);
       req.io.emit('queue_updated', { type: 'STATUS_RESUMED' });
     } catch (e) { console.error("Error auto-resuming queue:", e); }
+    req.io.emit('doctor_status_changed', { opdId: opdNumber, status, pendingStatus: null });
+    res.json({ success: true, status });
   } else {
-    // HOLIDAY or AWAY - Deactivate current patient to pause queue
+    let hasActive = false;
     try {
       const pool = await connectDB();
-      await pool.request()
+      const activeCheck = await pool.request()
         .input('OPDNumber', sql.NVarChar(50), opdNumber)
-        .query(`UPDATE Patients SET IsActive = 0 WHERE OPDNumber = @OPDNumber AND IsActive = 1`);
-      req.io.emit('queue_updated', { type: 'STATUS_PAUSED' });
-    } catch(e) { console.error("Error pausing queue:", e); }
+        .query("SELECT COUNT(*) as count FROM Patients WHERE OPDNumber = @OPDNumber AND IsActive = 1 AND QueueStatus IN ('WAITING', 'HOLD')");
+      hasActive = activeCheck.recordset[0].count > 0;
+    } catch(e) { console.error(e); }
+    
+    if (hasActive) {
+      pendingStaticStatuses[opdNumber] = status;
+      req.io.emit('doctor_status_changed', { opdId: opdNumber, status: 'AVAILABLE', pendingStatus: status });
+      res.json({ success: true, status: 'AVAILABLE', pendingStatus: status });
+    } else {
+      staticStatuses[opdNumber] = status;
+      delete pendingStaticStatuses[opdNumber];
+      try {
+        const pool = await connectDB();
+        await pool.request()
+          .input('OPDNumber', sql.NVarChar(50), opdNumber)
+          .query(`UPDATE Patients SET IsActive = 0 WHERE OPDNumber = @OPDNumber AND IsActive = 1`);
+        req.io.emit('queue_updated', { type: 'STATUS_PAUSED' });
+      } catch(e) { console.error("Error pausing queue:", e); }
+      req.io.emit('doctor_status_changed', { opdId: opdNumber, status, pendingStatus: null });
+      res.json({ success: true, status });
+    }
   }
-  
-  req.io.emit('doctor_status_changed', { opdId: opdNumber, status });
-  res.json({ success: true, status });
 });
 
 // Manually cancel an OT timer (pending or active)
