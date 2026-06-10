@@ -110,7 +110,7 @@ npm run dev
 
 🤝 **Contribution & Maintenance**
 
-This project is maintained by the **Navabharath Technologies Development Team(TokensBoy)**. For support or feedback, please contact the repository administrator.
+This project is maintained by the **Navabharath Technologies Development Team**. For support or feedback, please contact the repository administrator.
 
 
 <br> © 2026 Tokensboy. All Rights Reserved.
