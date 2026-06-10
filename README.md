@@ -1,17 +1,17 @@
-**AR Hospital - Backend Services**
+# **AR Hospital - Backend Services**
 
 Welcome to the **AR Hospital Backend Services**, a centralized healthcare operations engine designed to power intelligent queue management, AI-driven patient announcements, digital signage, and real-time OPD coordination.
 
 
 The backend consists of multiple integrated modules:
 
-🏥 Queue Management: Handles patient token generation, queue progression, and OPD allocation.
+<h4>🏥 Queue Management:</h4> Handles patient token generation, queue progression, and OPD allocation.
 
-🔊 AI Announcement Engine: Automates patient calling, token announcements, and queue updates.
+<h4>🔊 AI Announcement Engine:</h4> Automates patient calling, token announcements, and queue updates.
 
-📺 Digital Signage Services: Manages display panel data, video playlists, and live queue visualization.
+<h4>📺 Digital Signage Services:</h4> Manages display panel data, video playlists, and live queue visualization.
 
-⚙️ Real-Time Services: Provides instant synchronization across all connected devices and screens.
+<h4>⚙️ Real-Time Services:</h4> Provides instant synchronization across all connected devices and screens.
 
 
 📂 **Project Structure**
@@ -70,7 +70,7 @@ Automated Voice Announcements
 * Multi-OPD display support
 * Real-time queue updates
 
-Media Management
+**Media Management**
 
 * Video upload
 * Video deletion
@@ -91,7 +91,7 @@ Media Management
 
 🚀 **Getting Started**
 
-Prerequisites
+<h6>Prerequisites</h6>
 
 * Node.js (LTS Version)
 * Microsoft SQL Server
@@ -113,4 +113,4 @@ npm run dev
 This project is maintained by the **Navabharath Technologies Development Team(TokensBoy)**. For support or feedback, please contact the repository administrator.
 
 
-© 2026 Tokensboy. All Rights Reserved.
+<br> © 2026 Tokensboy. All Rights Reserved.
