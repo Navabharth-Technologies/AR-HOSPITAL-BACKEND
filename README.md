@@ -113,4 +113,4 @@ npm run dev
 This project is maintained by the **Navabharath Technologies Development Team**. For support or feedback, please contact the repository administrator.
 
 
-<br> © 2026 Tokensboy. All Rights Reserved.
+<br> © 2026 Navabharath Technologies. All Rights Reserved.
