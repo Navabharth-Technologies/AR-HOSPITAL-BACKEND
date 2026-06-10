@@ -1,8 +1,7 @@
-AR Hospital - Backend Services
+**AR Hospital - Backend Services**
 
 Welcome to the **AR Hospital Backend Services**, a centralized healthcare operations engine designed to power intelligent queue management, AI-driven patient announcements, digital signage, and real-time OPD coordination.
 
-The backend acts as the core communication layer between hospital staff, display systems, and patient management services, ensuring seamless synchronization across the entire hospital ecosystem.
 
 The backend consists of multiple integrated modules:
 
@@ -14,7 +13,8 @@ The backend consists of multiple integrated modules:
 
 ⚙️ Real-Time Services: Provides instant synchronization across all connected devices and screens.
 
-📂 Project Structure
+
+📂 **Project Structure**
 
 | Component           | Path             | Technology           | Description                                                  |
 | ------------------- | ---------------- | -------------------- | ------------------------------------------------------------ |
@@ -24,11 +24,12 @@ The backend consists of multiple integrated modules:
 | Media Services      | ./services/media | Azure Blob Storage   | Video upload, deletion, and playlist management              |
 | Announcement Engine | ./services/voice | Node.js Services     | AI voice announcement generation and queue broadcasting      |
 
-✨Core Features
 
-🏥 Queue Management
+✨ **Core Features**
 
-Live Queue Operations
+🏥 **Queue Management**
+
+**Live Queue Operations**
 
 * Patient token generation
 * Multi-OPD queue management
@@ -37,14 +38,14 @@ Live Queue Operations
 * Skip patient
 * Consultation completion tracking
 
-PDF Queue Import
+**PDF Queue Import**
 
 * Upload patient data through PDF
 * Automatic OPD-wise segregation
 * Instant queue generation
 * Real-time synchronization
 
-🔊AI Announcement Services
+🔊 **AI Announcement Services**
 
 Automated Voice Announcements
 
@@ -53,16 +54,16 @@ Automated Voice Announcements
 * OPD destination announcements
 * Next patient queue notifications
 
-Smart Audio Controls
+**Smart Audio Controls**
 
 * Dynamic announcement generation
 * Queue-triggered announcements
 * Real-time voice synchronization
 * Multilingual support readiness
 
-📺 Digital Signage Services
+📺 **Digital Signage Services**
 
-Display Panel Management
+**Display Panel Management**
 
 * Current token display
 * Next token display
@@ -77,9 +78,9 @@ Media Management
 * Continuous loop playback
 * Azure Blob Storage integration
 
-📊 Analytics & Monitoring
+📊 **Analytics & Monitoring**
 
-Operational Insights
+**Operational Insights**
 
 * Daily patient statistics
 * Queue performance metrics
@@ -87,7 +88,8 @@ Operational Insights
 * Announcement activity logs
 * System monitoring
 
-🚀 Getting Started
+
+🚀 **Getting Started**
 
 Prerequisites
 
@@ -95,19 +97,20 @@ Prerequisites
 * Microsoft SQL Server
 * Android Studio
 
-Production Start Command
-
+**Production Start Command**
+```
 npm install
 npm start
-
-Development Mode
-
+```
+**Development Mode**
+```
 npm install
 npm run dev
+```
 
-🤝 Contribution & Maintenance
+🤝 **Contribution & Maintenance**
 
-This project is maintained by the Navabharath Technologies Development Team(TokensBoy). For support or feedback, please contact the repository administrator.
+This project is maintained by the **Navabharath Technologies Development Team(TokensBoy)**. For support or feedback, please contact the repository administrator.
 
 
 © 2026 Tokensboy. All Rights Reserved.
