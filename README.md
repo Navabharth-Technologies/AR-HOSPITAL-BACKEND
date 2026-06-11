@@ -29,7 +29,7 @@ The backend consists of multiple integrated modules:
 
 🏥 **Queue Management**
 
-**Live Queue Operations**
+<h4>Live Queue Operations</h4>
 
 * Patient token generation
 * Multi-OPD queue management
@@ -38,7 +38,7 @@ The backend consists of multiple integrated modules:
 * Skip patient
 * Consultation completion tracking
 
-**PDF Queue Import**
+<h4>PDF Queue Import</h4>
 
 * Upload patient data through PDF
 * Automatic OPD-wise segregation
@@ -47,14 +47,14 @@ The backend consists of multiple integrated modules:
 
 🔊 **AI Announcement Services**
 
-Automated Voice Announcements
+<h4<Automated Voice Announcements</h4>
 
 * Token number announcements
 * Patient name announcements
 * OPD destination announcements
 * Next patient queue notifications
 
-**Smart Audio Controls**
+<h4>Smart Audio Controls</h4>
 
 * Dynamic announcement generation
 * Queue-triggered announcements
@@ -63,14 +63,14 @@ Automated Voice Announcements
 
 📺 **Digital Signage Services**
 
-**Display Panel Management**
+<h4>Display Panel Management</h4>
 
 * Current token display
 * Next token display
 * Multi-OPD display support
 * Real-time queue updates
 
-**Media Management**
+<h4>Media Management</h4>
 
 * Video upload
 * Video deletion
@@ -80,7 +80,7 @@ Automated Voice Announcements
 
 📊 **Analytics & Monitoring**
 
-**Operational Insights**
+<h4>Operational Insights</h4>
 
 * Daily patient statistics
 * Queue performance metrics
