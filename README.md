@@ -14,7 +14,7 @@ The backend consists of multiple integrated modules:
 <h4>⚙️ Real-Time Services:</h4> Provides instant synchronization across all connected devices and screens.
 
 
-📂 **Project Structure**
+### 📂 Project Structure
 
 | Component           | Path             | Technology           | Description                                                  |
 | ------------------- | ---------------- | -------------------- | ------------------------------------------------------------ |
@@ -25,11 +25,11 @@ The backend consists of multiple integrated modules:
 | Announcement Engine | ./services/voice | Node.js Services     | AI voice announcement generation and queue broadcasting      |
 
 
-✨ **Core Features**
+### ✨ Core Features
 
-🏥 **Queue Management**
+### 🏥 Queue Management
 
-<h4>Live Queue Operations</h4>
+<h5>Live Queue Operations</h5>
 
 * Patient token generation
 * Multi-OPD queue management
@@ -38,39 +38,39 @@ The backend consists of multiple integrated modules:
 * Skip patient
 * Consultation completion tracking
 
-<h4>PDF Queue Import</h4>
+<h5>PDF Queue Import</h5>
 
 * Upload patient data through PDF
 * Automatic OPD-wise segregation
 * Instant queue generation
 * Real-time synchronization
 
-🔊 **AI Announcement Services**
+### 🔊 AI Announcement Services
 
-<h4<Automated Voice Announcements</h4>
+<h5<Automated Voice Announcements </h5>
 
 * Token number announcements
 * Patient name announcements
 * OPD destination announcements
 * Next patient queue notifications
 
-<h4>Smart Audio Controls</h4>
+<h5>Smart Audio Controls</h5>
 
 * Dynamic announcement generation
 * Queue-triggered announcements
 * Real-time voice synchronization
 * Multilingual support readiness
 
-📺 **Digital Signage Services**
+### 📺 Digital Signage Services
 
-<h4>Display Panel Management</h4>
+<h5>Display Panel Management</h5>
 
 * Current token display
 * Next token display
 * Multi-OPD display support
 * Real-time queue updates
 
-<h4>Media Management</h4>
+<h5>Media Management</h5>
 
 * Video upload
 * Video deletion
@@ -78,9 +78,9 @@ The backend consists of multiple integrated modules:
 * Continuous loop playback
 * Azure Blob Storage integration
 
-📊 **Analytics & Monitoring**
+### 📊 Analytics & Monitoring
 
-<h4>Operational Insights</h4>
+<h5>Operational Insights</h5>
 
 * Daily patient statistics
 * Queue performance metrics
@@ -89,7 +89,7 @@ The backend consists of multiple integrated modules:
 * System monitoring
 
 
-🚀 **Getting Started**
+### 🚀 Getting Started
 
 <h6>Prerequisites</h6>
 
@@ -97,18 +97,18 @@ The backend consists of multiple integrated modules:
 * Microsoft SQL Server
 * Android Studio
 
-**Production Start Command**
+<h5>Production Start Command</h5>
 ```
 npm install
 npm start
 ```
-**Development Mode**
+<h5>Development Mode</h5>
 ```
 npm install
 npm run dev
 ```
 
-🤝 **Contribution & Maintenance**
+## 🤝 Contribution & Maintenance
 
 This project is maintained by the **Navabharath Technologies Development Team**. For support or feedback, please contact the repository administrator.
 
