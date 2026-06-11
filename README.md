@@ -47,7 +47,7 @@ The backend consists of multiple integrated modules:
 
 ### 🔊 AI Announcement Services
 
-<h5<Automated Voice Announcements </h5>
+<h5> Automated Voice Announcements </h5>
 
 * Token number announcements
 * Patient name announcements
