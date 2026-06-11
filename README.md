@@ -98,11 +98,13 @@ The backend consists of multiple integrated modules:
 * Android Studio
 
 <h5>Production Start Command</h5>
+
 ```
 npm install
 npm start
 ```
 <h5>Development Mode</h5>
+
 ```
 npm install
 npm run dev
