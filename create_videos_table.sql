@@ -13,6 +13,7 @@ BEGIN
         UpdatedDate DATETIME NULL
     );
     PRINT 'Videos table created successfully.';
+    
 END
 ELSE
 BEGIN
